@@ -14,5 +14,8 @@ submission.zip
 # Python / Jupyter / macOS
 __pycache__/
 .ipynb_checkpoints/
+.ipython/
+.jupyter/
 .venv*/
+.ultralytics/
 .DS_Store

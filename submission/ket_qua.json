@@ -1,0 +1,74 @@
+{
+  "progress": {
+    "box_iou": "ok",
+    "nms": "ok",
+    "batched_nms": "ok",
+    "average_precision": "ok",
+    "mask_iou": "ok",
+    "polygon_to_mask": "ok",
+    "mask_to_yolo_seg": "ok",
+    "autolabel": "ok",
+    "oks": "ok",
+    "joint_angle": "ok",
+    "FLIP_IDX": "ok"
+  },
+  "latency": [
+    {
+      "Cấu hình": "one-to-many + NMS, conf 0.25",
+      "preprocess (ms)": 1.37,
+      "inference (ms)": 7.58,
+      "postprocess (ms)": 1.5,
+      "số box": 5
+    },
+    {
+      "Cấu hình": "one-to-many + NMS, conf 0.001",
+      "preprocess (ms)": 1.32,
+      "inference (ms)": 6.77,
+      "postprocess (ms)": 1.62,
+      "số box": 202
+    },
+    {
+      "Cấu hình": "one-to-one NMS-free, conf 0.25",
+      "preprocess (ms)": 1.35,
+      "inference (ms)": 7.26,
+      "postprocess (ms)": 0.64,
+      "số box": 5
+    },
+    {
+      "Cấu hình": "one-to-one NMS-free, conf 0.001",
+      "preprocess (ms)": 1.3,
+      "inference (ms)": 7.49,
+      "postprocess (ms)": 0.66,
+      "số box": 204
+    }
+  ],
+  "result_4b": {
+    "flip_idx": "giải phẫu",
+    "epochs": 40,
+    "imgsz": 640,
+    "Box mAP50-95": 0.9285055678934327,
+    "Pose mAP50": 0.995,
+    "Pose mAP50-95": 0.4007302871694957,
+    "train (phút)": 4.0
+  },
+  "result_4c": null,
+  "answers": {
+    "Q1": "(a) bus.jpg cho 6.300 dự đoán thô: ba lưới 80×60, 40×30 và 20×15 có tổng 6.300 vị trí. Con số này nhỏ hơn 8.400 vì letterbox giữ tỉ lệ ảnh thành 640×480 thay vì lưới 640×640.\n(b) Nhãn gốc là cxcywh nhưng bị đọc nhầm thành xywh với x, y là góc trên-trái. Vì tâm bị dùng làm góc nên box dịch sang phải và xuống dưới đúng nửa kích thước.",
+    "Q2": "Cột thay đổi rõ nhất là postprocess: one-to-many + NMS mất 1,63 ms, còn one-to-one chỉ 0,63 ms, giảm khoảng 1,00 ms (61%) ở cả hai mức conf. Ở conf=0,001, model phải xử lý khoảng 202–204 box nên lợi ích kiến trúc của NMS-free có ý nghĩa hơn khi số candidate tăng.\nCảnh đông và conf thấp làm chi phí so sánh/chọn box của NMS tăng nhanh; trên CPU/NPU, phần hậu xử lý này không được GPU che khuất nên bỏ NMS giúp latency ổn định hơn.",
+    "Q3": "(a) Với IoU=0,75 và ngưỡng NMS=0,7, box có score thấp hơn của một công nhân sẽ bị loại, gây đếm thiếu. Tăng ngưỡng giữ được các object đứng sát nhau nhưng dễ sót duplicate; giảm ngưỡng dọn duplicate mạnh hơn nhưng dễ gộp nhầm hai object.\n(b) Head one-to-many tạo nhiều positive assignment cho mỗi ground truth, cung cấp tín hiệu huấn luyện dày và ổn định hơn. Nó hỗ trợ head one-to-one học đặc trưng tốt, còn khi suy luận chỉ cần head one-to-one NMS-free.",
+    "Q4": "(a) Hai người chạm nhau có thể dính thành một vùng nên đếm thiếu; ngược lại mask bị vỡ hoặc có nhiễu đốm nhỏ sẽ đếm thừa. Kết quả thực tế có 8 vùng person nhưng chỉ 4 người; panoptic segmentation gán thêm instance ID cho các class thing trong khi vẫn giữ nhãn semantic cho stuff.\n(b) Bên trong box xe buýt, 63% pixel bị gán thành train. Hình dáng phương tiện lớn, cửa sổ và ngữ cảnh không điển hình khiến model semantic nhầm với class train.",
+    "Q5": "(a) YOLO26-seg dùng lưới prototype chung nên object nhỏ/mỏng dễ mất chi tiết khi độ phân giải không gian và số basis bị giới hạn. Mask R-CNN cố định mask 28×28 cho mỗi RoI, nên khi phóng mask lên object lớn thì biên dễ bị thô; trong lần chạy này IoU cặp mask nằm trong 0,842–0,939.\n(b) Ghép mỗi mask YOLO với mask có IoU cao nhất một cách độc lập có thể cho nhiều mask YOLO cùng chiếm một mask Mask R-CNN. Hungarian matching tối ưu toàn cục và bảo đảm ghép một-một.",
+    "Q6": "(a) Điểm A sinh mask của toàn bộ người (47.441 pixel, IoU 0,99), còn điểm B chỉ bắt một mảnh nhỏ 2.714 pixel nên IoU xấp xỉ 0. Box prompt an toàn hơn vì cung cấp cả phạm vi và ngữ cảnh object, giảm tính mơ hồ của một điểm.\n(b) Nên dùng SAM trực tiếp khi cần tương tác/prompt linh hoạt, class mới và chấp nhận latency cao. Khi bài toán cố định, cần real-time hoặc chạy edge, nên dùng SAM để tạo nhãn, sửa tay ca sai rồi train YOLO26-seg nhỏ.",
+    "Q7": "Khi bỏ ngưỡng, Keypoint R-CNN vẫn vẽ đầu gối và mắt cá sát mép dưới/ở những vị trí không có bộ phận thật trong khung. Argmax luôn chọn một đỉnh heatmap dù heatmap chỉ là nhiễu, nên toạ độ tồn tại không có nghĩa là keypoint đáng tin.\nVì vậy mỗi keypoint cần score riêng để loại các điểm bị che, nằm ngoài ảnh hoặc không có bằng chứng; trong bảng, các logit chân có thể xuống tới -3,65.",
+    "Q8": "Người 40×80 rơi xuống dưới OKS 0,5 ở sai số khoảng 8 pixel; người 250×500 vẫn còn khoảng 0,65 ở 30 pixel, nên phải lệch trên 30 pixel mới xuống dưới 0,5. Sigma của mắt nhỏ vì người gán nhãn thống nhất vị trí mắt chính xác hơn, còn hông rộng và mơ hồ hơn; vì vậy lệch 8 pixel làm mắt còn 0,53 nhưng hông còn 0,97.\nVới camera trên cao và người chỉ cao khoảng 80 pixel, vài pixel sai số đã là tỉ lệ lớn; cần ảnh đủ phân giải, ROI/crop phù hợp và ngưỡng tin cậy theo keypoint.",
+    "Q9": "(a) Luật >60° có thể báo nhầm người đang cúi nhặt đồ, bò/làm việc sát sàn hoặc khi camera bị nghiêng; nó có thể bỏ sót người ngã theo hướng chiếu vẫn trông thẳng, bị che khuất hoặc vai/hông có score thấp.\n(b) Ảnh xoay 90° là distribution shift so với dữ liệu người thường đứng; detector/pose model không bất biến quay nên chỉ tìm thấy 3 người thay vì 5.\n(c) Hệ thống thật cần tracking nhiều khung hình, tốc độ/thay đổi tư thế, hiệu chỉnh camera và mặt sàn, xử lý che khuất, ngưỡng duy trì cảnh báo và bước xác nhận để giảm báo giả.",
+    "Q10": "mAP trên val gốc có thể không giảm rõ vì cả 210 ảnh train và 53 ảnh val đều là hổ quay phải; tập val không kiểm tra miền quay trái nên metric có thể che bug, dù nhãn augmentation sai vẫn có thể gây nhiễu. Bug trở thành lỗi thật khi triển khai gặp hổ quay trái, camera ở phía đối diện hoặc ảnh bị lật gương, lúc đó keypoint left/right sẽ bị đảo.",
+    "Q11": "Kiểu lỗi 1 là nhầm trái/phải: 16/53 ảnh có OKS tăng nếu hoán đổi nhãn, và trong Frame_37/Frame_31 các dự đoán đỏ-xanh ở các chân bị bắt chéo. Cách khắc phục là bổ sung hổ quay cả hai hướng, giữ FLIP_IDX giải phẫu và tạo val cân bằng hướng quay để metric lộ lỗi.\nKiểu lỗi 2 là sai số lớn ở bàn chân/khớp xa khi chân giao nhau, bị che hoặc nhoè do chuyển động; biểu đồ cho thấy right_front_paw khó nhất (~0,25), sau đó left_front_paw và left_hind_paw (~0,22), và các vạch vàng dài xuất hiện rõ trong Frame_192/Frame_191. Nên thêm ảnh cận cảnh và ca che khuất, gán visibility cho keypoint mơ hồ, dùng crop/độ phân giải cao hơn và augmentation blur có kiểm soát.",
+    "Q12": "Dùng cùng sigma=1/12 cho mọi keypoint không hoàn toàn hợp lý: mũi có mốc nhỏ và rõ, trong khi gốc đuôi hay khớp chân có vùng hợp lệ rộng, dễ bị che và có độ mơ hồ khác nhau. Sigma nên được ước lượng bằng cách cho nhiều annotator gán lặp một tập ảnh, tính độ lệch chuẩn khoảng cách cho từng keypoint sau khi chuẩn hoá theo căn bậc hai diện tích object.\nSau đó dùng thống kê robust/loại ca gán sai và kiểm chứng sigma trên tập val độc lập; keypoint có độ bất đồng annotator cao sẽ nhận sigma lớn hơn."
+  },
+  "env": {
+    "device": "cuda",
+    "torch": "2.11.0+cu126",
+    "ultralytics": "8.4.171"
+  }
+}
