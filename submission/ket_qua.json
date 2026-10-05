@@ -15,30 +15,30 @@
   "latency": [
     {
       "Cấu hình": "one-to-many + NMS, conf 0.25",
-      "preprocess (ms)": 1.37,
-      "inference (ms)": 7.58,
-      "postprocess (ms)": 1.5,
+      "preprocess (ms)": 1.32,
+      "inference (ms)": 6.58,
+      "postprocess (ms)": 1.42,
       "số box": 5
     },
     {
       "Cấu hình": "one-to-many + NMS, conf 0.001",
-      "preprocess (ms)": 1.32,
-      "inference (ms)": 6.77,
-      "postprocess (ms)": 1.62,
+      "preprocess (ms)": 1.34,
+      "inference (ms)": 6.58,
+      "postprocess (ms)": 1.51,
       "số box": 202
     },
     {
       "Cấu hình": "one-to-one NMS-free, conf 0.25",
-      "preprocess (ms)": 1.35,
-      "inference (ms)": 7.26,
-      "postprocess (ms)": 0.64,
+      "preprocess (ms)": 1.31,
+      "inference (ms)": 7.07,
+      "postprocess (ms)": 0.55,
       "số box": 5
     },
     {
       "Cấu hình": "one-to-one NMS-free, conf 0.001",
-      "preprocess (ms)": 1.3,
-      "inference (ms)": 7.49,
-      "postprocess (ms)": 0.66,
+      "preprocess (ms)": 1.26,
+      "inference (ms)": 6.74,
+      "postprocess (ms)": 0.53,
       "số box": 204
     }
   ],
@@ -49,9 +49,20 @@
     "Box mAP50-95": 0.9285055678934327,
     "Pose mAP50": 0.995,
     "Pose mAP50-95": 0.4007302871694957,
-    "train (phút)": 4.0
+    "train (phút)": 3.0
   },
-  "result_4c": null,
+  "result_4c": [
+    {
+      "Model": "flip_idx giải phẫu",
+      "Pose mAP50-95 — val gốc": 0.4007302871694957,
+      "Pose mAP50-95 — val lật gương": 0.2972374029759166
+    },
+    {
+      "Model": "flip_idx đồng nhất",
+      "Pose mAP50-95 — val gốc": 0.420667640686621,
+      "Pose mAP50-95 — val lật gương": 0.28308818510055617
+    }
+  ],
   "answers": {
     "Q1": "(a) bus.jpg cho 6.300 dự đoán thô: ba lưới 80×60, 40×30 và 20×15 có tổng 6.300 vị trí. Con số này nhỏ hơn 8.400 vì letterbox giữ tỉ lệ ảnh thành 640×480 thay vì lưới 640×640.\n(b) Nhãn gốc là cxcywh nhưng bị đọc nhầm thành xywh với x, y là góc trên-trái. Vì tâm bị dùng làm góc nên box dịch sang phải và xuống dưới đúng nửa kích thước.",
     "Q2": "Cột thay đổi rõ nhất là postprocess: one-to-many + NMS mất 1,63 ms, còn one-to-one chỉ 0,63 ms, giảm khoảng 1,00 ms (61%) ở cả hai mức conf. Ở conf=0,001, model phải xử lý khoảng 202–204 box nên lợi ích kiến trúc của NMS-free có ý nghĩa hơn khi số candidate tăng.\nCảnh đông và conf thấp làm chi phí so sánh/chọn box của NMS tăng nhanh; trên CPU/NPU, phần hậu xử lý này không được GPU che khuất nên bỏ NMS giúp latency ổn định hơn.",
